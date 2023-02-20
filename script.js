@@ -43,9 +43,9 @@ class App {
   _loadMap(position) {
     const { latitude, longitude } = position.coords;
     const coords = [latitude, longitude];
-    this.#map = L.map("map").setView(coords, 15); // the string passed to L.map is the Id of the element where the map will be displayed
-
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    this.#map = L.map("map").setView(coords, 17); // the string passed to L.map is the Id of the element where the map will be displayed
+    // '', {maxZoom: 20}
+    L.tileLayer("http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.#map);
