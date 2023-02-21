@@ -7,6 +7,8 @@ const inputDistance = document.querySelector(".form__input--distance");
 const inputDuration = document.querySelector(".form__input--duration");
 const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
+const logo = document.querySelector(".logo");
+
 let id = 0;
 // let map;
 // let mapEvent;
@@ -18,6 +20,9 @@ class App {
   #workouts = [];
 
   constructor() {
+    // get data from local storage
+    this._getLocalStorage();
+
     this._getPosition();
     // as an addeventlistener callbackfunction newworkout this points to the dom element that is being listened so we use bind to pass the this
 
@@ -44,9 +49,8 @@ class App {
         },
       });
 
-      //using the public interface of the workout class
-      workout.click();
-      console.log(workout);
+      //using the public interface of the workout class disabled because of problems with obj fetching from local storage
+      // workout.click();
     });
   }
 
@@ -76,6 +80,11 @@ class App {
 
     // we cannot simply use addeventlistener to the whole map element because wouldn't get the coordinates of where we clicked, so we use a custom method of the leaflet map object
     this.#map.on("click", this._showForm.bind(this));
+
+    // render the workouts from the storage as soon as the map is ready
+    this.#workouts.forEach((workout) => {
+      this._renderWorkoutMarker(workout);
+    });
   }
 
   _showForm(mapE) {
@@ -159,6 +168,9 @@ class App {
     this._renderWorkoutMarker(workout);
 
     this._renderWorkout(workout);
+
+    // set local storage to all workouts
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -227,6 +239,37 @@ class App {
 
     form.insertAdjacentHTML("afterend", html);
   }
+
+  _setLocalStorage() {
+    //local storage is a browser api
+    // key: value store
+    // json stringify to convert any object to string
+    localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    // parse opposite of stringify
+    // converting objects to strings and then back to obj, makes the prototype chain break so the objects that we get are not workout obj
+    const data = JSON.parse(localStorage.getItem("workouts"));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach((workout) => {
+      this._renderWorkout(workout);
+      // we need to be careful of timing here cause simply calling renderWorkoutMarker would try to add a pin to a map that doesn't exist yet so we move the call in the load map
+      // this._renderWorkoutMarker(workout);
+    });
+  }
+
+  // first public method acting as public interface
+  // delete all workouts from localstorage
+  reset() {
+    localStorage.removeItem("workouts");
+    // reload the page
+    location.reload();
+  }
 }
 
 class Workout {
@@ -240,9 +283,10 @@ class Workout {
     this.duration = duration; // mins
   }
 
-  click() {
-    this.clicks++;
-  }
+  // disabled because of problems with obj fetching from local storage
+  // click() {
+  //   this.clicks++;
+  // }
 
   _setDescription() {
     // prettier-ignore
@@ -286,3 +330,6 @@ class Cycling extends Workout {
 }
 
 const app = new App();
+
+// funzione aggiunta da alessio, reset chiamato dal click sul logo
+logo.addEventListener("click", app.reset);
